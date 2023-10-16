@@ -61,7 +61,7 @@ const MyApp = ({ Component, pageProps }: AppProps<CustomAppProps>) => {
     };
 
     useEffect(() => {
-        if (siteConfig.analytics) {
+        if (siteConfig?.analytics) {
             const handleRouteChange = (url) => {
                 pageview(url);
             };
