@@ -2,7 +2,7 @@
 import { remark } from "remark";
 import stripMarkdown, { Options } from "strip-markdown";
 
-import getAuthorsDetails from "./getAuthorsDetails";
+// import getAuthorsDetails from "./getAuthorsDetails";
 import sluggify from "./sluggify";
 
 // TODO return type
@@ -53,11 +53,11 @@ const computeFields = async ({
   const editUrl =
     (siteConfig.editLinkRoot && `${siteConfig.editLinkRoot}/${filePath}`) ||
     null;
-  const authors = await getAuthorsDetails(frontMatter.authors);
+  // const authors = await getAuthorsDetails(frontMatter.authors);
 
   return {
     ...frontMatter,
-    authors,
+    // authors,
     title,
     description,
     date,
