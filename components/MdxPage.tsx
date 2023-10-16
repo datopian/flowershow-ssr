@@ -24,7 +24,7 @@ export default function MdxPage({ source, frontMatter }) {
     };
 
     return (
-        <main id="mdxpage" className="prose mx-auto">
+        <main id="mdxpage" className="prose dark:prose-invert mx-auto">
             <Layout>
                 <MDXRemote {...source} components={components} />
             </Layout>
