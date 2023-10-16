@@ -50,12 +50,21 @@ export default function Page({ source, meta, siteConfig }: InferGetServerSidePro
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-    // TODO lookup org in the database, get the repo name, owner and branch
-    // mock for now
-    const project = projectsDB.find(p => p.org === params.org);
+    const { org, slug = [] } = params;
+
+    const projectsRes = await fetch('https://raw.githubusercontent.com/datopian/flowershow-ssr/main/projects.json')
+    const projects: Project[] = await projectsRes.json()
+    const project = projects.find(p => p.org === org);
+
+    if (!project) {
+        return {
+            notFound: true,
+        };
+    }
+
     const { repo, owner, branch, ghPagesDomain } = project.config;
 
-    const path = params.path ? (params.path as string[]).join("/") : "index";
+    const path = (slug as string[]).join("/");
     let file: string;
 
     try {
@@ -69,6 +78,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             path: path + ".md",
         });
     } catch (e1) {
+        /* console.log(e1.message); */
         try {
             // if the path points to a directory, get the index.md file inside
             file = await getRepoFile({
@@ -81,14 +91,14 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             });
 
         } catch (e2) {
-            console.log(e1.message);
-            console.log(e2.message);
+            /* console.log(e2.message); */
             return {
                 notFound: true,
             };
         }
     }
 
+    // TODO don't compute this on every request?
     const filePaths = await getAllRepoFilePaths({
         project: {
             owner,
@@ -125,17 +135,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     }
 }
 
-
-const projectsDB = [
-    {
-        id: 1,
-        org: "bulbasaur",
-        type: "github",
-        config: {
-            owner: "olayway",
-            repo: "digital-garden",
-            branch: "main",
-            ghPagesDomain: "olayway.github.io"
-        }
+interface Project {
+    id: string;
+    org: string;
+    config: {
+        repo: string;
+        owner: string;
+        branch: string;
+        ghPagesDomain?: string;
     }
-]
+}
