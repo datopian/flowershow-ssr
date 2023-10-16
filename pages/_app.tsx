@@ -1,12 +1,9 @@
-import React from "react";
-/* eslint import/no-default-export: off */
-import Script from "next/script";
-import { DefaultSeo } from "next-seo";
-import { useRouter } from "next/router";
 import { useEffect } from "react";
+import Script from "next/script";
+import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
+import { DefaultSeo } from "next-seo";
 
-import siteConfig from "../config/siteConfig";
 import {
     Layout,
     SearchProvider,
@@ -37,7 +34,7 @@ export interface CustomAppProps {
 
 const MyApp = ({ Component, pageProps }: AppProps<CustomAppProps>) => {
     const router = useRouter();
-    const { meta, siteMap } = pageProps;
+    const { meta, siteConfig } = pageProps;
 
     const layoutProps = {
         showToc: meta?.showToc,
@@ -46,24 +43,24 @@ const MyApp = ({ Component, pageProps }: AppProps<CustomAppProps>) => {
         showComments: meta?.showComments,
         editUrl: meta?.editUrl,
         urlPath: meta?.urlPath,
-        commentsConfig: siteConfig.comments,
+        commentsConfig: siteConfig?.comments,
         nav: {
-            title: siteConfig.navbarTitle?.text ?? siteConfig.title,
-            logo: siteConfig.navbarTitle?.logo,
-            links: siteConfig.navLinks,
-            search: siteConfig.search,
-            social: siteConfig.social,
+            title: siteConfig?.navbarTitle?.text ?? siteConfig?.title,
+            logo: siteConfig?.navbarTitle?.logo,
+            links: siteConfig?.navLinks,
+            search: siteConfig?.search,
+            social: siteConfig?.social,
         },
         author: {
-            name: siteConfig.author,
-            url: siteConfig.domain,
-            logo: siteConfig.logo,
+            name: siteConfig?.author,
+            url: siteConfig?.domain,
+            logo: siteConfig?.logo,
         },
         theme: {
-            defaultTheme: siteConfig.theme.default,
-            themeToggleIcon: siteConfig.theme.toggleIcon,
+            defaultTheme: siteConfig?.theme.default,
+            themeToggleIcon: siteConfig?.theme.toggleIcon,
         },
-        siteMap,
+        siteMap: [], // TODO
     };
 
     useEffect(() => {
@@ -82,12 +79,12 @@ const MyApp = ({ Component, pageProps }: AppProps<CustomAppProps>) => {
         <ThemeProvider
             disableTransitionOnChange
             attribute="class"
-            defaultTheme={siteConfig.theme.default}
-            forcedTheme={siteConfig.theme.default ? null : "light"}
+            defaultTheme={siteConfig?.theme.default}
+            forcedTheme={siteConfig?.theme.default ? null : "light"}
         >
-            <DefaultSeo defaultTitle={siteConfig.title} {...siteConfig.nextSeo} />
+            <DefaultSeo defaultTitle={siteConfig?.title} {...siteConfig?.nextSeo} />
             {/* Global Site Tag (gtag.js) - Google Analytics */}
-            {siteConfig.analytics && (
+            {siteConfig?.analytics && (
                 <>
                     <Script
                         strategy="afterInteractive"
@@ -109,7 +106,7 @@ const MyApp = ({ Component, pageProps }: AppProps<CustomAppProps>) => {
                     />
                 </>
             )}
-            <SearchProvider searchConfig={siteConfig.search}>
+            <SearchProvider searchConfig={siteConfig?.search}>
                 <Layout {...layoutProps}>
                     <Component {...pageProps} />
                 </Layout>

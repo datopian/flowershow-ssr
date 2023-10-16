@@ -2,7 +2,6 @@
 import { remark } from "remark";
 import stripMarkdown, { Options } from "strip-markdown";
 
-import siteConfig from "../config/siteConfig";
 import getAuthorsDetails from "./getAuthorsDetails";
 import sluggify from "./sluggify";
 
@@ -13,11 +12,13 @@ const computeFields = async ({
   urlPath,
   filePath,
   source,
+  siteConfig // TODO temp
 }: {
   frontMatter: Record<string, any>;
   urlPath: string;
   filePath: string;
   source: string;
+  siteConfig: Record<string, any>;
 }) => {
   // Fields with corresponding config options
   // TODO see _app.tsx

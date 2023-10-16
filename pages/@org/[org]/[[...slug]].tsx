@@ -9,7 +9,7 @@ import MdxPage from "@/components/MdxPage";
 import parse from "@/lib/markdown";
 import { getRepoFile, getAllRepoFilePaths } from "@/lib/octokit";
 import { filePathsToPermalinks } from "@/lib/filePathsToPermalinks";
-import siteConfig from "@/config/siteConfig";
+import { defaultConfig } from "@portaljs/core";
 
 
 export default function Page({ source, meta, siteConfig }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -124,6 +124,36 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 *     siteConfig: config,
 * }); */
 
+    let userConfig;
+
+    try {
+        // if the path points to a directory, get the index.md file inside
+        userConfig = await getRepoFile({
+            project: {
+                owner,
+                repo,
+                branch,
+            },
+            path: "/config.json",
+        });
+
+    } catch {
+        userConfig = {};
+    }
+
+    userConfig = JSON.parse(userConfig);
+
+    const siteConfig = {
+        ...defaultConfig,
+        ...userConfig,
+        // prevent theme object overrides for
+        // values not provided in userConfig
+        theme: {
+            ...defaultConfig.theme,
+            ...userConfig?.theme,
+        },
+    };
+
     return {
         props: {
             source: JSON.stringify(mdxSource),
@@ -132,6 +162,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         },
     }
 }
+
+
+
 
 interface Project {
     id: string;

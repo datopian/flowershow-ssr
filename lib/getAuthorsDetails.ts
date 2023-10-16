@@ -1,16 +1,16 @@
-import siteConfig from "../config/siteConfig";
 import clientPromise from "./mddb.mjs";
 import sluggify from "./sluggify";
 
-const getAuthorsDetails = async (authors?: string[]) => {
+// TODO fix params
+const getAuthorsDetails = async (authors?: string[], defaultAuthor?: string, avatarPlaceholder?: string) => {
   const mddb = await clientPromise;
   const allPeople = await mddb.getFiles({ folder: "people" });
   let blogAuthors: string[] = [];
 
   if (authors) {
     blogAuthors = authors;
-  } else if (siteConfig.defaultAuthor) {
-    blogAuthors = [siteConfig.defaultAuthor];
+  } else if (defaultAuthor) {
+    blogAuthors = [defaultAuthor];
   } else {
     blogAuthors = [];
   }
@@ -27,16 +27,16 @@ const getAuthorsDetails = async (authors?: string[]) => {
     });
     return matchedAuthor
       ? {
-          name: matchedAuthor.metadata?.name,
-          avatar:
-            matchedAuthor.metadata?.avatar ?? siteConfig.avatarPlaceholder,
-          // TODO find a better way
-          urlPath: !matchedAuthor.metadata?.isDraft && matchedAuthor.url_path,
-        }
+        name: matchedAuthor.metadata?.name,
+        avatar:
+          matchedAuthor.metadata?.avatar ?? avatarPlaceholder,
+        // TODO find a better way
+        urlPath: !matchedAuthor.metadata?.isDraft && matchedAuthor.url_path,
+      }
       : {
-          name: author,
-          avatar: siteConfig.avatarPlaceholder,
-        };
+        name: author,
+        avatar: avatarPlaceholder,
+      };
   });
 };
 
