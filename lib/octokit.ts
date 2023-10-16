@@ -9,20 +9,19 @@ export interface GitHubProject {
 export async function getRepoFile({
     project,
     path,
-    githubPat
 }: {
     project: GitHubProject,
     path: string,
-    githubPat: string
 }) {
-    const octokit = new Octokit({ auth: githubPat });
+    const octokit = new Octokit();
     try {
         const response = await octokit.rest.repos.getContent({
             owner: project.owner,
             repo: project.repo,
             ref: project.branch,
-            path: path + ".md", // TODO temporary
+            path: path
         });
+
         const data = response.data as {
             content?: string;
         };

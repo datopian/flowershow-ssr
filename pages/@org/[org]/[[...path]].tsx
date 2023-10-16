@@ -54,14 +54,39 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     const project = projectsDB.find(p => p.org === params.org);
     const { repo, owner, branch } = project.config;
 
-    const file = await getRepoFile({
-        project: {
-            owner,
-            repo,
-            branch,
-        },
-        path: params.path as string,
-    });
+    const path = params.path ? (params.path as string[]).join("/") : "index";
+    let file: string;
+
+    try {
+        // if the path points to a file
+        file = await getRepoFile({
+            project: {
+                owner,
+                repo,
+                branch,
+            },
+            path: path + ".md",
+        });
+    } catch (e1) {
+        try {
+            // if the path points to a directory, get the index.md file inside
+            file = await getRepoFile({
+                project: {
+                    owner,
+                    repo,
+                    branch,
+                },
+                path: path + "/index.md",
+            });
+
+        } catch (e2) {
+            console.log(e1.message);
+            console.log(e2.message);
+            return {
+                notFound: true,
+            };
+        }
+    }
 
     const { mdxSource, frontMatter } = await parse(file, "mdx", {});
 
