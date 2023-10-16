@@ -6,7 +6,6 @@ import { DefaultSeo } from "next-seo";
 
 import {
     Layout,
-    SearchProvider,
     pageview,
     ThemeProvider,
     NavItem,
@@ -14,7 +13,6 @@ import {
 } from "@portaljs/core";
 
 import "tailwindcss/tailwind.css";
-import "../styles/docsearch.css";
 import "../styles/global.css";
 import "../styles/prism.css";
 
@@ -48,7 +46,6 @@ const MyApp = ({ Component, pageProps }: AppProps<CustomAppProps>) => {
             title: siteConfig?.navbarTitle?.text ?? siteConfig?.title,
             logo: siteConfig?.navbarTitle?.logo,
             links: siteConfig?.navLinks,
-            search: siteConfig?.search,
             social: siteConfig?.social,
         },
         author: {
@@ -106,11 +103,9 @@ const MyApp = ({ Component, pageProps }: AppProps<CustomAppProps>) => {
                     />
                 </>
             )}
-            <SearchProvider searchConfig={siteConfig?.search}>
-                <Layout {...layoutProps}>
-                    <Component {...pageProps} />
-                </Layout>
-            </SearchProvider>
+            <Layout {...layoutProps}>
+                <Component {...pageProps} />
+            </Layout>
         </ThemeProvider>
     );
 };
