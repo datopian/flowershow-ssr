@@ -6,7 +6,8 @@
     "config": {
       "owner": "datopian",
       "repo": "flowershow-ssr-test-garden",
-      "branch": "main"
+      "branch": "main",
+      "ghPagesDomain": "datopian.github.io"
     }
   }
 ]
