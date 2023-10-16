@@ -32,7 +32,7 @@ const pathToPermalinkFunc = (
     if (filePath.match(/\.(png|jpg|jpeg|gif|svg)$/)) {
         permalink = githubPagesDomain ? `https://${githubPagesDomain}/${permalink}` : permalink;
     } else {
-        permalink = `@${org}/${permalink}`;
+        permalink = `/@${org}/${permalink}`;
     }
     return permalink.length > 0 ? permalink : "/"; // for home page
 };
