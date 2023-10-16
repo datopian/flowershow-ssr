@@ -113,8 +113,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         ghPagesDomain: ghPagesDomain + "/" + repo,
     });
 
-    console.log(permalinks);
-
     const { mdxSource, frontMatter } = await parse(file, "mdx", {}, permalinks);
 
     // TODO temporary replacement for contentlayer's computedFields
