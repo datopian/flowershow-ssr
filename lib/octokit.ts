@@ -22,6 +22,7 @@ export async function getRepoFile({
             path: path
         });
 
+        // TODO why is this type not working?
         const data = response.data as {
             content?: string;
         };
@@ -36,3 +37,29 @@ export async function getRepoFile({
     }
 }
 
+export async function getAllRepoFilePaths({
+    project,
+}: {
+    project: GitHubProject,
+}) {
+    const octokit = new Octokit();
+    try {
+        const { data: tree } = await octokit.rest.git.getTree({
+            owner: project.owner,
+            repo: project.repo,
+            tree_sha: project.branch,
+            recursive: "true"
+        })
+
+        // Filter the tree to only include blobs (files) not trees (folders)
+        const files = tree.tree.filter((file) => file.type === "blob");
+        const paths = files.map((f) => f.path)
+
+        return paths;
+
+    } catch (error) {
+        throw new Error(
+            `Could not get file paths in ${project.owner}/${project.repo}`
+        );
+    }
+}

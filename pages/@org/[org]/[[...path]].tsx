@@ -7,7 +7,8 @@ import { InferGetServerSidePropsType, GetServerSideProps } from "next";
 import MdxPage from "@/components/MdxPage";
 /* import computeFields from "@/lib/computeFields"; */
 import parse from "@/lib/markdown";
-import { getRepoFile } from "@/lib/octokit";
+import { getRepoFile, getAllRepoFilePaths } from "@/lib/octokit";
+import { filePathsToPermalinks } from "@/lib/filePathsToPermalinks";
 import siteConfig from "@/config/siteConfig";
 
 
@@ -52,7 +53,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     // TODO lookup org in the database, get the repo name, owner and branch
     // mock for now
     const project = projectsDB.find(p => p.org === params.org);
-    const { repo, owner, branch } = project.config;
+    const { repo, owner, branch, ghPagesDomain } = project.config;
 
     const path = params.path ? (params.path as string[]).join("/") : "index";
     let file: string;
@@ -88,7 +89,23 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         }
     }
 
-    const { mdxSource, frontMatter } = await parse(file, "mdx", {});
+    const filePaths = await getAllRepoFilePaths({
+        project: {
+            owner,
+            repo,
+            branch,
+        }
+    });
+
+    const permalinks = filePathsToPermalinks({
+        filePaths,
+        org: params.org as string,
+        ghPagesDomain: ghPagesDomain + "/" + repo,
+    });
+
+    console.log(permalinks);
+
+    const { mdxSource, frontMatter } = await parse(file, "mdx", {}, permalinks);
 
     // TODO temporary replacement for contentlayer's computedFields
     /* const frontMatterWithComputedFields = await computeFields({
@@ -117,7 +134,8 @@ const projectsDB = [
         config: {
             owner: "olayway",
             repo: "digital-garden",
-            branch: "main"
+            branch: "main",
+            ghPagesDomain: "olayway.github.io"
         }
     }
 ]
