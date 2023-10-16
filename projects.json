@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "org": "snorlax",
+    "type": "github",
+    "config": {
+      "owner": "datopian",
+      "repo": "flowershow-ssr-test-garden",
+      "branch": "main"
+    }
+  }
+]
