@@ -50,11 +50,22 @@ export default function Page({ source, meta, siteConfig }: InferGetServerSidePro
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
-    const { org, slug = [] } = params;
+    const { org, project, slug = [] } = params;
+    console.log({ org, project })
 
-    const projectsRes = await fetch('https://raw.githubusercontent.com/datopian/flowershow-ssr/main/projects.json')
-    const projects: Project[] = await projectsRes.json()
-    const project = projects.find(p => p.org === org);
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/projects?org=${org}&project=${project}`
+
+    const dbProjectJson = await fetch(url)
+        .then((res) => res.json())
+        .catch((e) => {
+            console.log(e);
+            return null;
+        });
+
+    // TODO types
+    const dbProject = JSON.parse(dbProjectJson);
+
+    console.log({ dbProject });
 
     if (!project) {
         return {
@@ -62,7 +73,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         };
     }
 
-    const { repo, owner, branch, ghPagesDomain } = project.config;
+    const { gh_repository, gh_owner, gh_branch } = dbProject;
 
     const path = (slug as string[]).join("/");
     let file: string;
@@ -71,27 +82,25 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         // if the path points to a file
         file = await getRepoFile({
             project: {
-                owner,
-                repo,
-                branch,
+                owner: gh_owner,
+                repo: gh_repository,
+                branch: gh_branch
             },
             path: path + ".md",
         });
     } catch (e1) {
-        /* console.log(e1.message); */
         try {
             // if the path points to a directory, get the index.md file inside
             file = await getRepoFile({
                 project: {
-                    owner,
-                    repo,
-                    branch,
+                    owner: gh_owner,
+                    repo: gh_repository,
+                    branch: gh_branch
                 },
                 path: path + "/index.md",
             });
 
         } catch (e2) {
-            /* console.log(e2.message); */
             return {
                 notFound: true,
             };
@@ -101,16 +110,17 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     // TODO don't compute this on every request?
     const filePaths = await getAllRepoFilePaths({
         project: {
-            owner,
-            repo,
-            branch,
+            owner: gh_owner,
+            repo: gh_repository,
+            branch: gh_branch
         }
     });
 
     const permalinks = filePathsToPermalinks({
         filePaths,
         org: params.org as string,
-        ghPagesDomain: ghPagesDomain + "/" + repo,
+        project: params.project as string,
+        ghPagesDomain: gh_owner + ".github.io/" + gh_repository, // TODO
     });
 
     const { mdxSource, frontMatter } = await parse(file, "mdx", {}, permalinks);
@@ -124,28 +134,30 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 *     siteConfig: config,
 * }); */
 
-    let userConfig;
+    let userConfig = {};
 
-    try {
-        // if the path points to a directory, get the index.md file inside
-        userConfig = await getRepoFile({
-            project: {
-                owner,
-                repo,
-                branch,
-            },
-            path: "/config.json",
-        });
+    /* try {
+*     // if the path points to a directory, get the index.md file inside
+*     userConfig = await getRepoFile({
+*         project: {
+*             owner: gh_owner,
+*             repo: gh_repository,
+*             branch: gh_branch,
+*         },
+*         path: "/config.json",
+*     });
 
-    } catch {
-        userConfig = {};
-    }
+* } catch {
+*     userConfig = {};
+* }
 
-    userConfig = JSON.parse(userConfig);
+* userConfig = JSON.parse(userConfig); */
 
     const siteConfig = {
         ...defaultConfig,
         ...userConfig,
+        // TODO dirty temporary solution
+        navLinks: userConfig.navLinks ? userConfig.navLinks.map((l) => orgPrefixLink(l, org as string)) : [],
         // prevent theme object overrides for
         // values not provided in userConfig
         theme: {
@@ -163,8 +175,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     }
 }
 
-
-
+function orgPrefixLink(link: string, org: string) {
+    return `/@${org}/${link}`
+}
 
 interface Project {
     id: string;
