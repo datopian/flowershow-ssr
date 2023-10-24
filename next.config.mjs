@@ -7,7 +7,7 @@ export default {
       beforeFiles: [
         {
           source: "/@:org/:slug*",
-          destination: "/@org/:org/:slug*",
+          destination: "/:org/:slug*",
         },
       ],
     };

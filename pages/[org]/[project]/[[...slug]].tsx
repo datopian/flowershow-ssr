@@ -1,6 +1,7 @@
 import React from "react";
 import { NextSeo } from "next-seo";
 import { InferGetServerSidePropsType, GetServerSideProps } from "next";
+import { db } from "@/lib/db";
 
 /* import { NavItem, NavGroup } from "@portaljs/core"; */
 
@@ -51,23 +52,18 @@ export default function Page({ source, meta, siteConfig }: InferGetServerSidePro
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     const { org, project, slug = [] } = params;
-    console.log({ org, project })
 
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/projects?org=${org}&project=${project}`
+    // TODO types!
+    const dbProject = await db.project.findFirst({
+        where: {
+            name: project as string, // TODO type
+            org: {
+                name: org as string, // TODO type
+            }
+        },
+    });
 
-    const dbProjectJson = await fetch(url)
-        .then((res) => res.json())
-        .catch((e) => {
-            console.log(e);
-            return null;
-        });
-
-    // TODO types
-    const dbProject = JSON.parse(dbProjectJson);
-
-    console.log({ dbProject });
-
-    if (!project) {
+    if (!dbProject) {
         return {
             notFound: true,
         };
@@ -157,13 +153,13 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         ...defaultConfig,
         ...userConfig,
         // TODO dirty temporary solution
-        navLinks: userConfig.navLinks ? userConfig.navLinks.map((l) => orgPrefixLink(l, org as string)) : [],
+        /* navLinks: userConfig.navLinks ? userConfig.navLinks.map((l) => orgPrefixLink(l, org as string)) : [], */
         // prevent theme object overrides for
         // values not provided in userConfig
-        theme: {
-            ...defaultConfig.theme,
-            ...userConfig?.theme,
-        },
+        /* theme: {
+*     ...defaultConfig.theme,
+*     ...userConfig?.theme,
+* }, */
     };
 
     return {

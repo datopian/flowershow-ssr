@@ -2,12 +2,14 @@ export const filePathsToPermalinks = (
     {
         filePaths,
         org,
+        project,
         ignorePatterns = [/\.gitignore/],
         ghPagesDomain,
     }:
         {
             filePaths: string[],
             org: string,
+            project: string,
             ignorePatterns?: Array<RegExp>,
             ghPagesDomain?: string,
         }
@@ -16,12 +18,13 @@ export const filePathsToPermalinks = (
         return !ignorePatterns.some((pattern) => file.match(pattern));
     });
 
-    return filesFiltered.map((file) => pathToPermalinkFunc(file, org, ghPagesDomain));
+    return filesFiltered.map((file) => pathToPermalinkFunc(file, org, project, ghPagesDomain));
 };
 
 const pathToPermalinkFunc = (
     filePath: string,
     org: string,
+    project: string,
     githubPagesDomain?: string,
 ) => {
     let permalink = filePath
@@ -32,7 +35,7 @@ const pathToPermalinkFunc = (
     if (filePath.match(/\.(png|jpg|jpeg|gif|svg)$/)) {
         permalink = githubPagesDomain ? `https://${githubPagesDomain}/${permalink}` : permalink;
     } else {
-        permalink = `/@${org}/${permalink}`;
+        permalink = `/@${org}/${project}/${permalink}`;
     }
     return permalink.length > 0 ? permalink : "/"; // for home page
 };
