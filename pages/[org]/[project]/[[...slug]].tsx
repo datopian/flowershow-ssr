@@ -130,36 +130,37 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 *     siteConfig: config,
 * }); */
 
-    let userConfig = {};
+    let userConfig: any = {};
 
-    /* try {
-*     // if the path points to a directory, get the index.md file inside
-*     userConfig = await getRepoFile({
-*         project: {
-*             owner: gh_owner,
-*             repo: gh_repository,
-*             branch: gh_branch,
-*         },
-*         path: "/config.json",
-*     });
-
-* } catch {
-*     userConfig = {};
-* }
-
-* userConfig = JSON.parse(userConfig); */
+    try {
+        // if the path points to a directory, get the index.md file inside
+        userConfig = await getRepoFile({
+            project: {
+                owner: gh_owner,
+                repo: gh_repository,
+                branch: gh_branch,
+            },
+            path: "/config.json",
+        });
+        userConfig = JSON.parse(userConfig);
+    } catch {
+        console.log("no config file found");
+    }
 
     const siteConfig = {
         ...defaultConfig,
         ...userConfig,
         // TODO dirty temporary solution
-        /* navLinks: userConfig.navLinks ? userConfig.navLinks.map((l) => orgPrefixLink(l, org as string)) : [], */
+        navLinks: userConfig.navLinks ? userConfig.navLinks.map((link) => ({
+            ...link,
+            href: orgPrefixLink(link.href, org as string, project as string)
+        })) : [],
         // prevent theme object overrides for
         // values not provided in userConfig
-        /* theme: {
-*     ...defaultConfig.theme,
-*     ...userConfig?.theme,
-* }, */
+        theme: {
+            ...defaultConfig.theme,
+            ...userConfig?.theme,
+        },
     };
 
     return {
@@ -171,8 +172,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     }
 }
 
-function orgPrefixLink(link: string, org: string) {
-    return `/@${org}/${link}`
+function orgPrefixLink(link: string, org: string, project: string) {
+    return `/@${org}/${project}/${link}`
 }
 
 interface Project {
