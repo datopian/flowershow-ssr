@@ -37,7 +37,10 @@ model Account {
     provider          String
     providerAccountId String
     refresh_token     String? // @db.Text
-    refresh_token_expires_in Int // https://next-auth.js.org/providers/github
+    // setting this as optional as had to opt-out of user-to-server token expiration in GitHub App
+    // as refreshing tokens failed with "bad_refresh_token" error
+    // see this discussion for ref: https://github.com/orgs/community/discussions/24745
+    refresh_token_expires_in Int? // https://next-auth.js.org/providers/github
     access_token      String? // @db.Text
     expires_at        Int?
     token_type        String?
@@ -81,7 +84,7 @@ model Project {
     id            String @id @default(cuid())
     name          String
     type          String
-    gh_owner      String
+    gh_scope      String
     gh_repository String
     gh_branch     String
     status        String @default("active") // active, inactive
@@ -94,5 +97,4 @@ model Project {
     createdById   String
 
     @@unique([name, orgId])
-
 }

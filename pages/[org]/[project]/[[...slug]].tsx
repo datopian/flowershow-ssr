@@ -69,16 +69,18 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         };
     }
 
-    const { gh_repository, gh_owner, gh_branch } = dbProject;
+    const { gh_repository, gh_scope, gh_branch } = dbProject;
 
     const path = (slug as string[]).join("/");
+
     let file: string;
 
+    // TODO this is uuuugly
     try {
         // if the path points to a file
         file = await getRepoFile({
             project: {
-                owner: gh_owner,
+                owner: gh_scope,
                 repo: gh_repository,
                 branch: gh_branch
             },
@@ -86,10 +88,10 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         });
     } catch (e1) {
         try {
-            // if the path points to a directory, get the index.md file inside
+            // check if the path points to a directory, get the index.md file inside
             file = await getRepoFile({
                 project: {
-                    owner: gh_owner,
+                    owner: gh_scope,
                     repo: gh_repository,
                     branch: gh_branch
                 },
@@ -97,16 +99,30 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             });
 
         } catch (e2) {
-            return {
-                notFound: true,
-            };
+            // lastly, try to get the README.md file
+            try {
+
+                file = await getRepoFile({
+                    project: {
+                        owner: gh_scope,
+                        repo: gh_repository,
+                        branch: gh_branch
+                    },
+                    path: path + "/README.md",
+                });
+
+            } catch {
+                return {
+                    notFound: true,
+                };
+            }
         }
     }
 
     // TODO don't compute this on every request?
     const filePaths = await getAllRepoFilePaths({
         project: {
-            owner: gh_owner,
+            owner: gh_scope,
             repo: gh_repository,
             branch: gh_branch
         }
@@ -116,7 +132,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         filePaths,
         org: params.org as string,
         project: params.project as string,
-        ghPagesDomain: gh_owner + ".github.io/" + gh_repository, // TODO
+        ghPagesDomain: gh_scope + ".github.io/" + gh_repository, // TODO
     });
 
     const { mdxSource, frontMatter } = await parse(file, "mdx", {}, permalinks);
@@ -136,7 +152,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         // if the path points to a directory, get the index.md file inside
         userConfig = await getRepoFile({
             project: {
-                owner: gh_owner,
+                owner: gh_scope,
                 repo: gh_repository,
                 branch: gh_branch,
             },
